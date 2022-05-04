@@ -1,4 +1,5 @@
 ﻿using OpenCvSharp;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace DeadBySkill;
@@ -10,12 +11,12 @@ class Program
 
     static async Task Main(string[] args)
     {
+        Console.ForegroundColor = ConsoleColor.Green;
         if (args.Length == 1 && int.TryParse(args[0], out var delay))
         {
             Delay = delay;
-            Console.WriteLine("Delay: " + delay + "ms");
         }
-        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("Delay: " + Delay + "ms");
         Console.WriteLine("Press key for skill check. Spacebar not recommended!");
         SelectKey();
         var lowWhite = new Scalar(253, 253, 253);
@@ -58,6 +59,7 @@ class Program
 
             var circlePixelCount = vPixelArray.Cast<Vec3b>().Count(vec3b => vec3b != default);
             var isManiac = circlePixelCount > 600;
+
             if (circlePixelCount > 50)
             {
             search:
@@ -77,9 +79,15 @@ class Program
                             }
                             else
                             {
-                                await Task.Delay(Delay);
-                                keybd_event((byte)ConsoleKey, 0, 0x0001 | 0, 0);
-                                keybd_event((byte)ConsoleKey, 0, 0x0002 | 0, 0);
+                                var stopwatch = Stopwatch.StartNew();
+                                while (true)
+                                {
+                                    if (stopwatch.ElapsedMilliseconds >= Delay)
+                                    {
+                                        break;
+                                    }
+                                }
+                                PressKey();
                                 goto start;
                             }
                         }
@@ -88,9 +96,7 @@ class Program
 
                 if (isManiac && count >= 18)
                 {
-                    await Task.Delay(Delay);
-                    keybd_event((byte)ConsoleKey, 0, 0x0001 | 0, 0);
-                    keybd_event((byte)ConsoleKey, 0, 0x0002 | 0, 0);
+                    PressKey();
                 }
 
                 if (rPixelArray.Cast<Vec3b>().Any(vec3b => vec3b != default))
@@ -109,7 +115,7 @@ class Program
 
     private static ConsoleKey ConsoleKey;
 
-    private static int Delay = 0;
+    private static int Delay = 5;
 
     private static void SelectKey()
     {
@@ -124,5 +130,11 @@ class Program
         {
             Console.WriteLine("Selected key: " + ConsoleKey);
         }
+    }
+
+    private static void PressKey()
+    {
+        keybd_event((byte)ConsoleKey, 0, 0x0001 | 0, 0);
+        keybd_event((byte)ConsoleKey, 0, 0x0002 | 0, 0);
     }
 }
