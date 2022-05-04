@@ -8,8 +8,13 @@ class Program
     [DllImport("user32.dll")]
     public static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, uint dwExtraInfo);
 
-    static async Task Main()
+    static async Task Main(string[] args)
     {
+        if (args.Length == 1 && int.TryParse(args[0], out var delay))
+        {
+            Delay = delay;
+            Console.WriteLine("Delay: " + delay + "ms");
+        }
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("Press key for skill check. Spacebar not recommended!");
         SelectKey();
@@ -72,6 +77,7 @@ class Program
                             }
                             else
                             {
+                                await Task.Delay(Delay);
                                 keybd_event((byte)ConsoleKey, 0, 0x0001 | 0, 0);
                                 keybd_event((byte)ConsoleKey, 0, 0x0002 | 0, 0);
                                 goto start;
@@ -82,6 +88,7 @@ class Program
 
                 if (isManiac && count >= 18)
                 {
+                    await Task.Delay(Delay);
                     keybd_event((byte)ConsoleKey, 0, 0x0001 | 0, 0);
                     keybd_event((byte)ConsoleKey, 0, 0x0002 | 0, 0);
                 }
@@ -101,6 +108,8 @@ class Program
     private static readonly Screen Screen = new();
 
     private static ConsoleKey ConsoleKey;
+
+    private static int Delay = 0;
 
     private static void SelectKey()
     {
